@@ -10,7 +10,7 @@ import {
   type Connection,
 } from "@xyflow/react";
 
-type CustomData = {
+export type CustomData = {
   label?: string;
   value?: number;
 };

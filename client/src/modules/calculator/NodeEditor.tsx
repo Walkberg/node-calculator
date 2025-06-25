@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCalculator } from "./CalculatorContext";
+import { CalculatorToolbar } from "./CalculatorToolbar";
 
 const nodeTypes = {
   floatNode: FloatNode,
@@ -38,6 +39,7 @@ export function Flow() {
       >
         Evaluate
       </button>
+      <CalculatorToolbar />
     </div>
   );
 }
@@ -51,7 +53,7 @@ export function FloatNode({ data, id }: NodeProps) {
   };
 
   return (
-    <div style={{ padding: 10, background: "#eee", borderRadius: 8 }}>
+    <NodeContainer color="#2255fc">
       <div>Input</div>
       <input
         type="number"
@@ -60,13 +62,13 @@ export function FloatNode({ data, id }: NodeProps) {
         style={{ width: "80px" }}
       />
       <Handle type="source" position={Position.Right} />
-    </div>
+    </NodeContainer>
   );
 }
 
 export function AddNode({ data }: NodeProps) {
   return (
-    <div style={{ padding: 10, background: "#cce", borderRadius: 8 }}>
+    <NodeContainer color="#1fc">
       <Handle
         id={"1"}
         type="target"
@@ -82,16 +84,30 @@ export function AddNode({ data }: NodeProps) {
       <div>Add Node</div>
       <strong>{String(data.value) ?? "?"}</strong>
       <Handle type="source" position={Position.Right} />
-    </div>
+    </NodeContainer>
   );
 }
 
 export function OutputNode({ data }: NodeProps) {
   return (
-    <div style={{ padding: 10, background: "#cec", borderRadius: 8 }}>
+    <NodeContainer color="#f3c">
       <Handle type="target" position={Position.Left} />
       <div>Output</div>
       <strong>{String(data.value)}</strong>
-    </div>
+    </NodeContainer>
   );
 }
+
+export const NodeContainer = ({
+  children,
+  color,
+}: {
+  children: React.ReactNode;
+  color: string;
+}) => {
+  return (
+    <div style={{ padding: 10, background: color, borderRadius: 8 }}>
+      {children}
+    </div>
+  );
+};
