@@ -46,3 +46,15 @@ export function evaluateGraph(graph: CalculatorGraph): CalculatorGraph {
 
   return { ...graph, nodes: updatedNodes };
 }
+
+export function deleteNode(
+  graph: CalculatorGraph,
+  id: string
+): CalculatorGraph {
+  const updatedNodes = graph.nodes.filter((n) => n.id !== id);
+  const updatedEdges = graph.edges.filter(
+    (e) => e.source !== id && e.target !== id
+  );
+
+  return { ...graph, nodes: updatedNodes, edges: updatedEdges };
+}

@@ -73,6 +73,7 @@ type CalculatorContextType = {
   evaluate: () => void;
   selectNode?: (id: string) => void;
   deselectNode?: () => void;
+  deleteNode?: (id: string) => void;
   selectedNodeId?: string | null;
 };
 
@@ -128,13 +129,16 @@ export const CalculatorProvider = ({
     setNodes(newGraph.nodes);
   }, [nodes, edges, getNodeValue]);
 
-  const selectNode = (id: string) => {
-    setSelectedNodeId(id);
+  const deleteNode = (id: string) => {
+    setNodes((nodes) => nodes.filter((node) => node.id !== id));
+    setEdges((edges) =>
+      edges.filter((edge) => edge.source !== id && edge.target !== id)
+    );
   };
 
-  const deselectNode = () => {
-    setSelectedNodeId(null);
-  };
+  const selectNode = (id: string) => setSelectedNodeId(id);
+
+  const deselectNode = () => setSelectedNodeId(null);
 
   return (
     <CalculatorContext.Provider
@@ -151,6 +155,7 @@ export const CalculatorProvider = ({
         selectNode,
         deselectNode,
         selectedNodeId,
+        deleteNode,
       }}
     >
       {children}

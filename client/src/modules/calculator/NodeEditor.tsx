@@ -108,7 +108,8 @@ export const NodeContainer = ({
   children: React.ReactNode;
   color: string;
 }) => {
-  const { selectedNodeId, selectNode, deselectNode } = useCalculator();
+  const { selectedNodeId, selectNode, deselectNode, deleteNode } =
+    useCalculator();
 
   const [hovered, setHovered] = useState(false);
 
@@ -124,22 +125,43 @@ export const NodeContainer = ({
   };
 
   return (
-    <div
-      onClick={handleClick}
-      onMouseOver={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: 10,
-        background: color,
-        borderRadius: 8,
-        border: hovered
-          ? "1px solid #00f7ff"
-          : selected
-          ? "1px solid #16a4a8"
-          : "",
-      }}
-    >
-      {children}
+    <div>
+      <button
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          background: "transparent",
+          border: "none",
+          color: "#fff",
+          cursor: "pointer",
+          width: 20,
+          height: 20,
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteNode?.(id);
+        }}
+      >
+        x
+      </button>
+      <div
+        onClick={handleClick}
+        onMouseOver={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          padding: 10,
+          background: color,
+          borderRadius: 8,
+          border: hovered
+            ? "1px solid #00f7ff"
+            : selected
+            ? "1px solid #16a4a8"
+            : "",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 };
