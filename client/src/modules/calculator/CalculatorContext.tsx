@@ -9,6 +9,11 @@ import {
   type EdgeChange,
   type Connection,
 } from "@xyflow/react";
+import {
+  evaluateGraph,
+  type CalculatorEdge,
+  type CalculatorNode,
+} from "./calculator";
 
 export type CustomData = {
   label?: string;
@@ -57,15 +62,18 @@ const initialNodes: Node<CustomData>[] = [
 const initialEdges: Edge[] = [];
 
 type CalculatorContextType = {
-  nodes: Node<CustomData>[];
-  edges: Edge[];
-  setNodes: React.Dispatch<React.SetStateAction<Node<CustomData>[]>>;
-  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  nodes: CalculatorNode[];
+  edges: CalculatorEdge[];
+  setNodes: React.Dispatch<React.SetStateAction<CalculatorNode[]>>;
+  setEdges: React.Dispatch<React.SetStateAction<CalculatorEdge[]>>;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
   updateNodeValue: (id: string, value: number) => void;
   evaluate: () => void;
+  selectNode?: (id: string) => void;
+  deselectNode?: () => void;
+  selectedNodeId?: string | null;
 };
 
 const CalculatorContext = createContext<CalculatorContextType | undefined>(
@@ -85,6 +93,7 @@ export const CalculatorProvider = ({
 }) => {
   const [nodes, setNodes] = useState<Node<CustomData>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -115,28 +124,17 @@ export const CalculatorProvider = ({
   );
 
   const evaluate = useCallback(() => {
-    const updatedNodes = [...nodes];
-
-    for (const node of updatedNodes) {
-      if (node.type === "addNode") {
-        const inputs = edges
-          .filter((e) => e.target === node.id)
-          .map((e) => getNodeValue(e.source))
-          .filter((v): v is number => typeof v === "number");
-
-        const sum = inputs.reduce((a, b) => a + b, 0);
-        node.data = { ...node.data, value: sum };
-      }
-
-      if (node.type === "outputNode") {
-        const edge = edges.find((e) => e.target === node.id);
-        const inputValue = edge ? getNodeValue(edge.source) : 0;
-        node.data = { ...node.data, value: inputValue };
-      }
-    }
-
-    setNodes(updatedNodes);
+    const newGraph = evaluateGraph({ id: "calculator", nodes, edges });
+    setNodes(newGraph.nodes);
   }, [nodes, edges, getNodeValue]);
+
+  const selectNode = (id: string) => {
+    setSelectedNodeId(id);
+  };
+
+  const deselectNode = () => {
+    setSelectedNodeId(null);
+  };
 
   return (
     <CalculatorContext.Provider
@@ -150,6 +148,9 @@ export const CalculatorProvider = ({
         onConnect,
         updateNodeValue,
         evaluate,
+        selectNode,
+        deselectNode,
+        selectedNodeId,
       }}
     >
       {children}

@@ -9,6 +9,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useCalculator } from "./CalculatorContext";
 import { CalculatorToolbar } from "./CalculatorToolbar";
+import { useState } from "react";
 
 const nodeTypes = {
   floatNode: FloatNode,
@@ -53,7 +54,7 @@ export function FloatNode({ data, id }: NodeProps) {
   };
 
   return (
-    <NodeContainer color="#2255fc">
+    <NodeContainer id={id} color="#2255fc">
       <div>Input</div>
       <input
         type="number"
@@ -66,9 +67,9 @@ export function FloatNode({ data, id }: NodeProps) {
   );
 }
 
-export function AddNode({ data }: NodeProps) {
+export function AddNode({ data, id }: NodeProps) {
   return (
-    <NodeContainer color="#1fc">
+    <NodeContainer id={id} color="#1fc">
       <Handle
         id={"1"}
         type="target"
@@ -88,9 +89,9 @@ export function AddNode({ data }: NodeProps) {
   );
 }
 
-export function OutputNode({ data }: NodeProps) {
+export function OutputNode({ id, data }: NodeProps) {
   return (
-    <NodeContainer color="#f3c">
+    <NodeContainer id={id} color="#f3c">
       <Handle type="target" position={Position.Left} />
       <div>Output</div>
       <strong>{String(data.value)}</strong>
@@ -101,12 +102,43 @@ export function OutputNode({ data }: NodeProps) {
 export const NodeContainer = ({
   children,
   color,
+  id,
 }: {
+  id: string;
   children: React.ReactNode;
   color: string;
 }) => {
+  const { selectedNodeId, selectNode, deselectNode } = useCalculator();
+
+  const [hovered, setHovered] = useState(false);
+
+  const selected = selectedNodeId === id;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selected) {
+      deselectNode?.();
+    } else {
+      selectNode?.(id);
+    }
+  };
+
   return (
-    <div style={{ padding: 10, background: color, borderRadius: 8 }}>
+    <div
+      onClick={handleClick}
+      onMouseOver={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: 10,
+        background: color,
+        borderRadius: 8,
+        border: hovered
+          ? "1px solid #00f7ff"
+          : selected
+          ? "1px solid #16a4a8"
+          : "",
+      }}
+    >
       {children}
     </div>
   );
