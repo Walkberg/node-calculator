@@ -4,7 +4,6 @@ import {
   applyNodeChanges,
   addEdge,
   type Edge,
-  type Node,
   type NodeChange,
   type EdgeChange,
   type Connection,
