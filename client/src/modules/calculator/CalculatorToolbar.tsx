@@ -1,13 +1,15 @@
+import { calculatorNodeConfigs, type CalculatorNode } from "./calculator";
 import { useCalculator, type CustomData } from "./CalculatorContext";
 import { type Node } from "@xyflow/react";
 
 export const CalculatorToolbar = () => {
+  const configs = calculatorNodeConfigs;
   const { setNodes } = useCalculator();
 
   const handleAddNode = (type: string) => {
     const id = `${type}-${Date.now()}`;
 
-    const newNode: Node<CustomData> = {
+    const newNode: CalculatorNode = {
       id,
       type,
       position: {
@@ -31,8 +33,11 @@ export const CalculatorToolbar = () => {
         zIndex: 10,
       }}
     >
-      <button onClick={() => handleAddNode("floatNode")}>+ Float</button>
-      <button onClick={() => handleAddNode("addNode")}>+ Add</button>
+      {Object.entries(configs).map(([key, config]) => (
+        <button key={key} onClick={() => handleAddNode(key)}>
+          {config.label}
+        </button>
+      ))}
     </div>
   );
 };

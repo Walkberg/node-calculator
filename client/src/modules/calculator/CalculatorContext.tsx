@@ -10,6 +10,7 @@ import {
   type Connection,
 } from "@xyflow/react";
 import {
+  canConnect,
   evaluateGraph,
   type CalculatorEdge,
   type CalculatorNode,
@@ -20,7 +21,7 @@ export type CustomData = {
   value?: number;
 };
 
-const initialNodes: Node<CustomData>[] = [
+const initialNodes: CalculatorNode[] = [
   {
     id: "float-1",
     type: "floatNode",
@@ -66,7 +67,7 @@ type CalculatorContextType = {
   edges: CalculatorEdge[];
   setNodes: React.Dispatch<React.SetStateAction<CalculatorNode[]>>;
   setEdges: React.Dispatch<React.SetStateAction<CalculatorEdge[]>>;
-  onNodesChange: (changes: NodeChange[]) => void;
+  onNodesChange: (changes: NodeChange<CalculatorNode>[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
   updateNodeValue: (id: string, value: number) => void;
@@ -92,11 +93,12 @@ export const CalculatorProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [nodes, setNodes] = useState<Node<CustomData>[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [name, setName] = useState("calculator");
+  const [nodes, setNodes] = useState<CalculatorNode[]>(initialNodes);
+  const [edges, setEdges] = useState<CalculatorEdge[]>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => {
+  const onNodesChange = useCallback((changes: NodeChange<CalculatorNode>[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
   }, []);
 
@@ -104,9 +106,12 @@ export const CalculatorProvider = ({
     setEdges((eds) => applyEdgeChanges(changes, eds));
   }, []);
 
-  const onConnect = useCallback((connection: Connection) => {
+  const onConnect = (connection: Connection) => {
+    if (!canConnect({ id: name, nodes, edges }, connection)) {
+      return;
+    }
     setEdges((eds) => addEdge(connection, eds));
-  }, []);
+  };
 
   const updateNodeValue = useCallback((id: string, value: number) => {
     setNodes((nodes) =>
@@ -125,7 +130,7 @@ export const CalculatorProvider = ({
   );
 
   const evaluate = useCallback(() => {
-    const newGraph = evaluateGraph({ id: "calculator", nodes, edges });
+    const newGraph = evaluateGraph({ id: name, nodes, edges });
     setNodes(newGraph.nodes);
   }, [nodes, edges, getNodeValue]);
 

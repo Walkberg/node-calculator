@@ -10,11 +10,13 @@ import "@xyflow/react/dist/style.css";
 import { useCalculator } from "./CalculatorContext";
 import { CalculatorToolbar } from "./CalculatorToolbar";
 import { useState } from "react";
+import { calculatorNodeConfigs, type CalculatorNodeConfig } from "./calculator";
 
 const nodeTypes = {
   floatNode: FloatNode,
   addNode: AddNode,
   outputNode: OutputNode,
+  minusNode: MinusNode,
 };
 
 export function Flow() {
@@ -45,7 +47,8 @@ export function Flow() {
   );
 }
 
-export function FloatNode({ data, id }: NodeProps) {
+export function FloatNode({ data, id, type }: NodeProps) {
+  const config = calculatorNodeConfigs[type];
   const { updateNodeValue } = useCalculator();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +57,7 @@ export function FloatNode({ data, id }: NodeProps) {
   };
 
   return (
-    <NodeContainer id={id} color="#2255fc">
+    <NodeContainer id={id} config={config}>
       <div>Input</div>
       <input
         type="number"
@@ -62,51 +65,78 @@ export function FloatNode({ data, id }: NodeProps) {
         onChange={handleChange}
         style={{ width: "80px" }}
       />
-      <Handle type="source" position={Position.Right} />
     </NodeContainer>
   );
 }
 
-export function AddNode({ data, id }: NodeProps) {
+export function AddNode({ data, id, type }: NodeProps) {
+  const config = calculatorNodeConfigs[type];
+
   return (
-    <NodeContainer id={id} color="#1fc">
-      <Handle
-        id={"1"}
-        type="target"
-        position={Position.Left}
-        style={{ top: "25%" }}
-      />
-      <Handle
-        id={"2"}
-        type="target"
-        position={Position.Left}
-        style={{ top: "75%" }}
-      />
-      <div>Add Node</div>
+    <NodeContainer id={id} config={config}>
+      <div>{config.label}</div>
       <strong>{String(data.value) ?? "?"}</strong>
-      <Handle type="source" position={Position.Right} />
     </NodeContainer>
   );
 }
 
-export function OutputNode({ id, data }: NodeProps) {
+export function MinusNode({ data, id, type }: NodeProps) {
+  const config = calculatorNodeConfigs[type];
+
   return (
-    <NodeContainer id={id} color="#f3c">
-      <Handle type="target" position={Position.Left} />
-      <div>Output</div>
+    <NodeContainer id={id} config={config}>
+      <div>{config.label}</div>
+      <strong>{String(data.value) ?? "?"}</strong>
+    </NodeContainer>
+  );
+}
+
+export function OutputNode({ id, data, type }: NodeProps) {
+  const config = calculatorNodeConfigs[type];
+  return (
+    <NodeContainer id={id} config={config}>
+      <div>{config.label}</div>
       <strong>{String(data.value)}</strong>
     </NodeContainer>
   );
 }
 
+export const Sockets = ({
+  config,
+  type,
+}: {
+  config: CalculatorNodeConfig;
+  type: "inputs" | "outputs";
+}) => {
+  const sockets = type === "inputs" ? config.inputs : config.outputs;
+  const targetType = type === "inputs" ? "target" : "source";
+  const targetPosition = type === "inputs" ? Position.Left : Position.Right;
+
+  return sockets.map((socket, index) => (
+    <Handle
+      id={socket.id}
+      type={targetType}
+      position={targetPosition}
+      style={{
+        top: `${lerp(25, 75, index / (sockets.length - 1))}%`,
+      }}
+    />
+  ));
+};
+
+const lerp = (a: number, b: number, t: number) => {
+  return a + (b - a) * t;
+};
+
 export const NodeContainer = ({
   children,
-  color,
   id,
+  config,
 }: {
   id: string;
   children: React.ReactNode;
-  color: string;
+
+  config: CalculatorNodeConfig;
 }) => {
   const { selectedNodeId, selectNode, deselectNode, deleteNode } =
     useCalculator();
@@ -151,7 +181,7 @@ export const NodeContainer = ({
         onMouseLeave={() => setHovered(false)}
         style={{
           padding: 10,
-          background: color,
+          background: config.color,
           borderRadius: 8,
           border: hovered
             ? "1px solid #00f7ff"
@@ -160,7 +190,9 @@ export const NodeContainer = ({
             : "",
         }}
       >
+        <Sockets config={config} type="inputs" />
         {children}
+        <Sockets config={config} type="outputs" />
       </div>
     </div>
   );
