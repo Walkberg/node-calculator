@@ -11,6 +11,7 @@ import { useCalculator } from "./CalculatorContext";
 import { CalculatorToolbar } from "./CalculatorToolbar";
 import { useState } from "react";
 import { calculatorNodeConfigs, type CalculatorNodeConfig } from "./calculator";
+import { CodeViewer } from "./CodeViewer";
 
 const nodeTypes = {
   floatNode: FloatNode,
@@ -20,8 +21,15 @@ const nodeTypes = {
 };
 
 export function Flow() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, evaluate } =
-    useCalculator();
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    evaluate,
+    code,
+  } = useCalculator();
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -43,6 +51,7 @@ export function Flow() {
         Evaluate
       </button>
       <CalculatorToolbar />
+      <CodeViewer code={code} title="JavaScript généré" />
     </div>
   );
 }

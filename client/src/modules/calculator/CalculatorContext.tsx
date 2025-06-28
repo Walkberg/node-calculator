@@ -10,10 +10,11 @@ import {
 } from "@xyflow/react";
 import {
   canConnect,
-  evaluateGraph,
+  evaluateFromOutput,
   type CalculatorEdge,
   type CalculatorNode,
 } from "./calculator";
+import { generateCodeFromOutput } from "./code-generation";
 
 export type CustomData = {
   label?: string;
@@ -75,6 +76,7 @@ type CalculatorContextType = {
   deselectNode?: () => void;
   deleteNode?: (id: string) => void;
   selectedNodeId?: string | null;
+  code: string;
 };
 
 const CalculatorContext = createContext<CalculatorContextType | undefined>(
@@ -96,6 +98,7 @@ export const CalculatorProvider = ({
   const [nodes, setNodes] = useState<CalculatorNode[]>(initialNodes);
   const [edges, setEdges] = useState<CalculatorEdge[]>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [code, setCode] = useState<string>("");
 
   const onNodesChange = useCallback((changes: NodeChange<CalculatorNode>[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -129,8 +132,18 @@ export const CalculatorProvider = ({
   );
 
   const evaluate = useCallback(() => {
-    const newGraph = evaluateGraph({ id: name, nodes, edges });
-    setNodes(newGraph.nodes);
+    const graph = { id: name, nodes, edges };
+
+    const outputNode = nodes.find((n) => n.type === "outputNode");
+    if (!outputNode) {
+      console.warn("Aucun noeud de sortie trouvé.");
+      return;
+    }
+
+    const evaluated = evaluateFromOutput(graph, outputNode.id);
+    const code = generateCodeFromOutput(graph, outputNode.id);
+    setCode(code);
+    setNodes(evaluated.nodes);
   }, [nodes, edges, getNodeValue]);
 
   const deleteNode = (id: string) => {
@@ -160,6 +173,7 @@ export const CalculatorProvider = ({
         deselectNode,
         selectedNodeId,
         deleteNode,
+        code,
       }}
     >
       {children}

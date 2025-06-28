@@ -1,4 +1,10 @@
 import type { Connection, Edge, Node } from "@xyflow/react";
+import {
+  substractNodeConfig,
+  outputNodeConfig,
+  floatNodeConfig,
+  addNodeConfig,
+} from "./nodes";
 
 export interface CalculatorGraph {
   id: string;
@@ -23,30 +29,6 @@ export function getNodeValue(
 ): number | undefined {
   const node = graph.nodes.find((n) => n.id === id);
   return node?.data.value ?? 0;
-}
-
-export function evaluateGraph(graph: CalculatorGraph): CalculatorGraph {
-  const updatedNodes = [...graph.nodes];
-
-  for (const node of updatedNodes) {
-    if (node.type === "addNode") {
-      const inputs = graph.edges
-        .filter((e) => e.target === node.id)
-        .map((e) => getNodeValue(graph, e.source))
-        .filter((v): v is number => typeof v === "number");
-
-      const sum = inputs.reduce((a, b) => a + b, 0);
-      node.data = { ...node.data, value: sum };
-    }
-
-    if (node.type === "outputNode") {
-      const edge = graph.edges.find((e) => e.target === node.id);
-      const inputValue = edge ? getNodeValue(graph, edge.source) : 0;
-      node.data = { ...node.data, value: inputValue };
-    }
-  }
-
-  return { ...graph, nodes: updatedNodes };
 }
 
 export function canConnect(
@@ -90,6 +72,89 @@ export function canConnect(
   return !inputOccupied && !outputOccupied;
 }
 
+export function createEvaluator(graph: CalculatorGraph): EvaluationContext {
+  const memo = new Map<string, number>();
+
+  const context: EvaluationContext = {
+    getNodeValue: (nodeId: string, handleId?: string): number => {
+      const memoKey = handleId ? `${nodeId}:${handleId}` : nodeId;
+      if (memo.has(memoKey)) return memo.get(memoKey)!;
+
+      const node = graph.nodes.find((n) => n.id === nodeId);
+      if (!node) return 0;
+
+      const config = calculatorNodeConfigs[node.type];
+      if (!config || !config.evaluate) return 0;
+
+      if (handleId && config.inputs.some((input) => input.id === handleId)) {
+        const connectedEdge = graph.edges.find(
+          (e) => e.target === nodeId && e.targetHandle === handleId
+        );
+
+        if (connectedEdge) {
+          const sourceValue = context.getNodeValue(connectedEdge.source);
+          memo.set(memoKey, sourceValue);
+          return sourceValue;
+        } else {
+          memo.set(memoKey, 0);
+          return 0;
+        }
+      }
+
+      const value = config.evaluate(context, node);
+      memo.set(memoKey, value);
+
+      return value;
+    },
+  };
+
+  return context;
+}
+
+export function evaluateFromOutput(
+  graph: CalculatorGraph,
+  outputNodeId: string
+): CalculatorGraph {
+  const context = createEvaluator(graph);
+  const visited = new Set<string>();
+  const updatedNodesMap = new Map<string, CalculatorNode>();
+
+  function evaluateNode(nodeId: string): void {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+
+    const node = graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    const config = calculatorNodeConfigs[node.type];
+    if (!config) return;
+
+    const incomingEdges = graph.edges.filter((e) => e.target === nodeId);
+    for (const edge of incomingEdges) {
+      evaluateNode(edge.source);
+    }
+
+    try {
+      const value = context.getNodeValue(nodeId);
+      updatedNodesMap.set(nodeId, {
+        ...node,
+        data: { ...node.data, value: value as number },
+      });
+    } catch (error) {
+      console.error(`Error evaluating node ${nodeId}:`, error);
+      updatedNodesMap.set(nodeId, node);
+    }
+  }
+
+  evaluateNode(outputNodeId);
+
+  const updatedNodes = graph.nodes.map((node) => {
+    return updatedNodesMap.get(node.id) || node;
+  });
+
+  return { ...graph, nodes: updatedNodes };
+}
+
 export function deleteNode(
   graph: CalculatorGraph,
   id: string
@@ -116,55 +181,24 @@ export type OutputSocket = Socket;
 
 export type Color = string;
 
+export interface EvaluationContext {
+  getNodeValue: (nodeId: string, handleId?: string) => number;
+}
+
+type EvaluateFn = (context: EvaluationContext, node: CalculatorNode) => number;
+
 export interface CalculatorNodeConfig {
   type: string;
   label: string;
   color: Color;
   inputs: InputSocket[];
   outputs: OutputSocket[];
+  evaluate: EvaluateFn;
 }
-
-export const addNodeConfig: CalculatorNodeConfig = {
-  type: "addNode",
-  label: "Add",
-  color: "#1fc",
-  inputs: [
-    { id: "input-1", multiple: false, type: "number" },
-    { id: "input-2", multiple: false, type: "number" },
-  ],
-  outputs: [{ id: "output-1", multiple: true, type: "number" }],
-};
-
-export const minusNodeConfig: CalculatorNodeConfig = {
-  type: "minusNode",
-  label: "Minus",
-  color: "#1cf",
-  inputs: [
-    { id: "input-1", multiple: false, type: "number" },
-    { id: "input-2", multiple: false, type: "number" },
-  ],
-  outputs: [{ id: "output-1", multiple: true, type: "number" }],
-};
-
-export const outputNodeConfig: CalculatorNodeConfig = {
-  type: "outputNode",
-  label: "Output",
-  color: "#f3c",
-  inputs: [{ id: "input-1", multiple: false, type: "number" }],
-  outputs: [],
-};
-
-export const floatNodeConfig: CalculatorNodeConfig = {
-  type: "floatNode",
-  label: "Float",
-  color: "#2255fc",
-  inputs: [],
-  outputs: [{ id: "output-1", multiple: true, type: "number" }],
-};
 
 export const calculatorNodeConfigs: Record<string, CalculatorNodeConfig> = {
   addNode: addNodeConfig,
   outputNode: outputNodeConfig,
   floatNode: floatNodeConfig,
-  minusNode: minusNodeConfig,
+  minusNode: substractNodeConfig,
 };
