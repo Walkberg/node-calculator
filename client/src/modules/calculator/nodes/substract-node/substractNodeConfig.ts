@@ -13,6 +13,6 @@ export const substractNodeConfig: CalculatorNodeConfig = {
   evaluate: (ctx, node) => {
     const a = ctx.getNodeValue(node.id, "input-1");
     const b = ctx.getNodeValue(node.id, "input-2");
-    return a - b;
+    return { type: "number", value: a - b };
   },
 };

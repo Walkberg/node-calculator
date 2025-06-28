@@ -98,10 +98,10 @@ export function createEvaluator(graph: CalculatorGraph): EvaluationContext {
         }
       }
 
-      const value = config.evaluate(context, node);
-      memo.set(memoKey, value);
+      const evaluatedNode = config.evaluate(context, node);
+      memo.set(memoKey, evaluatedNode.value);
 
-      return value;
+      return evaluatedNode.value;
     },
   };
 
@@ -182,7 +182,15 @@ export interface EvaluationContext {
   getNodeValue: (nodeId: string, handleId?: string) => number;
 }
 
-type EvaluateFn = (context: EvaluationContext, node: CalculatorNode) => number;
+export interface EvaluatedNode {
+  type: SocketType;
+  value: number;
+}
+
+type EvaluateFn = (
+  context: EvaluationContext,
+  node: CalculatorNode
+) => EvaluatedNode;
 
 export interface CalculatorNodeConfig {
   type: string;

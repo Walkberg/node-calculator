@@ -8,6 +8,6 @@ export const outputNodeConfig: CalculatorNodeConfig = {
   inputs: [{ id: "input-1", multiple: false, type: "number" }],
   outputs: [],
   evaluate: (ctx, node) => {
-    return ctx.getNodeValue(node.id, "input-1");
+    return { type: "number", value: ctx.getNodeValue(node.id, "input-1") };
   },
 };

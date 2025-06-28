@@ -8,6 +8,6 @@ export const floatNodeConfig: CalculatorNodeConfig = {
   inputs: [],
   outputs: [{ id: "output-1", multiple: true, type: "number" }],
   evaluate: (__ctx, node) => {
-    return node.data?.value ?? 0;
+    return { type: "number", value: node.data?.value ?? 0 };
   },
 };
