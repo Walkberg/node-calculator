@@ -1,6 +1,5 @@
 import { calculatorNodeConfigs, type CalculatorNode } from "./calculator";
-import { useCalculator, type CustomData } from "./CalculatorContext";
-import { type Node } from "@xyflow/react";
+import { useCalculator } from "./CalculatorContext";
 
 export const CalculatorToolbar = () => {
   const configs = calculatorNodeConfigs;
