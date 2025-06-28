@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -16,51 +22,82 @@ import {
 } from "./calculator";
 import { generateCodeFromOutput } from "./code-generation";
 
-export type CustomData = {
-  label?: string;
-  value?: number;
-};
-
-const initialNodes: CalculatorNode[] = [
+export const initialNodes: CalculatorNode[] = [
   {
-    id: "float-1",
+    id: "input1",
     type: "floatNode",
-    position: { x: 100, y: 100 },
-    data: { label: "Input", value: 2 },
+    data: { value: 5 },
+    position: { x: 0, y: 0 },
   },
   {
-    id: "float-2",
+    id: "input2",
     type: "floatNode",
-    position: { x: 100, y: 250 },
-    data: { label: "Input", value: 3 },
+    data: { value: 3 },
+    position: { x: 0, y: 100 },
   },
   {
-    id: "float-3",
+    id: "input3",
     type: "floatNode",
-    position: { x: 50, y: 250 },
-    data: { label: "Input", value: 3 },
+    data: { value: 1 },
+    position: { x: 0, y: 100 },
   },
   {
-    id: "add-1",
+    id: "add1",
     type: "addNode",
-    position: { x: 300, y: 150 },
-    data: { label: "Add" },
+    data: {},
+    position: { x: 200, y: 50 },
   },
   {
-    id: "add-2",
-    type: "addNode",
-    position: { x: 200, y: 150 },
-    data: { label: "Add" },
+    id: "minus1",
+    type: "minusNode",
+    data: {},
+    position: { x: 200, y: 50 },
   },
   {
-    id: "output-1",
+    id: "output1",
     type: "outputNode",
-    position: { x: 500, y: 150 },
-    data: { label: "Output", value: 0 },
+    data: {},
+    position: { x: 400, y: 50 },
   },
 ];
 
-const initialEdges: Edge[] = [];
+export const initialEdges: Edge[] = [
+  {
+    id: "e1",
+    source: "input1",
+    sourceHandle: "output-1",
+    target: "add1",
+    targetHandle: "input-1",
+  },
+  {
+    id: "e2",
+    source: "input2",
+    sourceHandle: "output-1",
+    target: "add1",
+    targetHandle: "input-2",
+  },
+  {
+    id: "e3",
+    source: "add1",
+    sourceHandle: "output-1",
+    target: "minus1",
+    targetHandle: "input-1",
+  },
+  {
+    id: "e4",
+    source: "input3",
+    sourceHandle: "output-1",
+    target: "minus1",
+    targetHandle: "input-2",
+  },
+  {
+    id: "e5",
+    source: "minus1",
+    sourceHandle: "output-1",
+    target: "output1",
+    targetHandle: "input-1",
+  },
+];
 
 type CalculatorContextType = {
   nodes: CalculatorNode[];
@@ -89,16 +126,20 @@ export const useCalculator = () => {
   return ctx;
 };
 
-export const CalculatorProvider = ({
-  children,
-}: {
+interface CalculatorProviderProps {
   children: React.ReactNode;
-}) => {
+}
+
+export const CalculatorProvider = ({ children }: CalculatorProviderProps) => {
   const [name, setName] = useState("calculator");
   const [nodes, setNodes] = useState<CalculatorNode[]>(initialNodes);
   const [edges, setEdges] = useState<CalculatorEdge[]>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [code, setCode] = useState<string>("");
+
+  useEffect(() => {
+    evaluate();
+  }, []);
 
   const onNodesChange = useCallback((changes: NodeChange<CalculatorNode>[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -113,6 +154,7 @@ export const CalculatorProvider = ({
       return;
     }
     setEdges((eds) => addEdge(connection, eds));
+    evaluate();
   };
 
   const updateNodeValue = useCallback((id: string, value: number) => {
