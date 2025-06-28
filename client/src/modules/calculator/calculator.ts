@@ -189,6 +189,7 @@ type EvaluateFn = (context: EvaluationContext, node: CalculatorNode) => number;
 
 export interface CalculatorNodeConfig {
   type: string;
+  category: string;
   label: string;
   color: Color;
   inputs: InputSocket[];

@@ -3,6 +3,7 @@ import type { CalculatorNodeConfig } from "../../calculator";
 export const substractNodeConfig: CalculatorNodeConfig = {
   type: "minusNode",
   label: "Minus",
+  category: "math",
   color: "#1cf",
   inputs: [
     { id: "input-1", multiple: false, type: "number" },

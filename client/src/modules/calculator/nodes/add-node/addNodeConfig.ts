@@ -2,6 +2,7 @@ import type { CalculatorNodeConfig } from "../../calculator";
 
 export const addNodeConfig: CalculatorNodeConfig = {
   type: "addNode",
+  category: "math",
   label: "Add",
   color: "#1fc",
   inputs: [

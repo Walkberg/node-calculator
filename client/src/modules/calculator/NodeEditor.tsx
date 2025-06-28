@@ -31,7 +31,7 @@ export function Flow() {
     code,
   } = useCalculator();
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div className="w-screen h-screen">
       <ReactFlow
         nodes={nodes}
         edges={edges}

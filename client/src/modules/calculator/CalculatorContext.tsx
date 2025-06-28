@@ -112,6 +112,7 @@ type CalculatorContextType = {
   selectNode?: (id: string) => void;
   deselectNode?: () => void;
   deleteNode?: (id: string) => void;
+  addNode: (type: string) => void;
   selectedNodeId?: string | null;
   code: string;
 };
@@ -195,6 +196,22 @@ export const CalculatorProvider = ({ children }: CalculatorProviderProps) => {
     );
   };
 
+  const addNode = (type: string) => {
+    const id = `${type}-${Date.now()}`;
+
+    const newNode: CalculatorNode = {
+      id,
+      type,
+      position: {
+        x: 100 + Math.random() * 400,
+        y: 100 + Math.random() * 400,
+      },
+      data: { label: type, value: type === "floatNode" ? 0 : undefined },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+  };
+
   const selectNode = (id: string) => setSelectedNodeId(id);
 
   const deselectNode = () => setSelectedNodeId(null);
@@ -216,6 +233,7 @@ export const CalculatorProvider = ({ children }: CalculatorProviderProps) => {
         selectedNodeId,
         deleteNode,
         code,
+        addNode,
       }}
     >
       {children}
