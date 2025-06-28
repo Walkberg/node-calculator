@@ -4,16 +4,19 @@ import { useCalculator } from "./CalculatorContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Card } from "../../components/ui/card";
+import { configModule } from "./nodes";
+
+const initialValue = configModule.getConfigs();
 
 export const CalculatorToolbar = () => {
   const [search, setSearch] = useState("");
-  const [config] = useState(calculatorNodeConfigs);
+  const [configs] = useState(initialValue);
 
   const { addNode } = useCalculator();
 
   const handleAddNode = (type: string) => addNode(type);
 
-  const filtered = filterBySearch(config, search);
+  const filtered = filterBySearch(configs, search);
 
   const groupedByCategory = groupByCategory(filtered);
 

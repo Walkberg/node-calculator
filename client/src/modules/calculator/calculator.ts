@@ -1,10 +1,5 @@
 import type { Connection, Edge, Node } from "@xyflow/react";
-import {
-  substractNodeConfig,
-  outputNodeConfig,
-  floatNodeConfig,
-  addNodeConfig,
-} from "./nodes";
+import { configModule } from "./nodes";
 
 export interface CalculatorGraph {
   id: string;
@@ -30,6 +25,8 @@ export function getNodeValue(
   const node = graph.nodes.find((n) => n.id === id);
   return node?.data.value ?? 0;
 }
+
+export const calculatorNodeConfigs = configModule.getConfigs();
 
 export function canConnect(
   graph: CalculatorGraph,
@@ -196,10 +193,3 @@ export interface CalculatorNodeConfig {
   outputs: OutputSocket[];
   evaluate: EvaluateFn;
 }
-
-export const calculatorNodeConfigs: Record<string, CalculatorNodeConfig> = {
-  addNode: addNodeConfig,
-  outputNode: outputNodeConfig,
-  floatNode: floatNodeConfig,
-  minusNode: substractNodeConfig,
-};
