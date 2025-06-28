@@ -43,12 +43,10 @@ export function CodeViewer({ code, title = "Code généré" }: CodeViewerProps) 
     );
   }
 
-  // Nettoyer le code s'il est dans un format JSON string
   const cleanCode = code;
 
   return (
     <div className="fixed bottom-4 right-4 w-96 max-h-80 bg-gray-900 text-white rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between p-3 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center gap-2">
           <Code size={16} className="text-blue-400" />
@@ -82,7 +80,6 @@ export function CodeViewer({ code, title = "Code généré" }: CodeViewerProps) 
         </div>
       </div>
 
-      {/* Code Content */}
       {isVisible && (
         <div className="p-3 overflow-auto max-h-64">
           <pre className="text-xs leading-relaxed">
@@ -152,8 +149,6 @@ export function CodeViewer({ code, title = "Code généré" }: CodeViewerProps) 
           </pre>
         </div>
       )}
-
-      {/* Footer avec info */}
       {isVisible && (
         <div className="px-3 py-2 bg-gray-800 border-t border-gray-700">
           <div className="flex items-center justify-between text-xs text-gray-400">
@@ -162,39 +157,6 @@ export function CodeViewer({ code, title = "Code généré" }: CodeViewerProps) 
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// Exemple d'utilisation dans votre Flow component
-export function FlowExample() {
-  const [code] = useState(`const input_01 = 2;
-const input_02 = 3;
-const input_03 = 5;
-const sum_01 = input_01 + input_02;
-const sum_02 = sum_01 + input_03;
-const result_01 = sum_02;`);
-
-  return (
-    <div className="w-full h-screen bg-gray-100 relative">
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-4">Visual Flow Calculator</h1>
-        <p className="text-gray-600 mb-8">
-          Votre interface de flow se trouve ici. Le code généré s'affiche dans
-          le panneau en bas à droite.
-        </p>
-
-        {/* Simulation de votre ReactFlow */}
-        <div className="bg-white rounded-lg shadow-lg p-8 h-96 border-2 border-dashed border-gray-300 flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <Code size={48} className="mx-auto mb-4" />
-            <p>Votre ReactFlow Calculator ici</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Composant CodeViewer */}
-      <CodeViewer code={code} title="JavaScript généré" />
     </div>
   );
 }
