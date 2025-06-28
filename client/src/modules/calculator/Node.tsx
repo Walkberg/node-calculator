@@ -3,6 +3,7 @@ import { useCalculator } from "./CalculatorContext";
 import {
   calculatorNodeConfigs,
   type CalculatorNodeConfig,
+  type Color,
   type SocketType,
 } from "./calculator";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
@@ -71,13 +72,13 @@ export function OutputNode({ id, data, type }: NodeProps) {
   );
 }
 
-const getColorForType = (type: SocketType): string => {
-  switch (type) {
-    case "boolean":
-      return "#4ade80";
-    case "number":
-      return "#661125";
-  }
+const socketConfig: Record<SocketType, { color: Color }> = {
+  boolean: { color: "#4ade80" },
+  number: { color: "#661125" },
+};
+
+const getColorForType = (type: SocketType): Color => {
+  return socketConfig[type].color;
 };
 
 export const Sockets = ({
